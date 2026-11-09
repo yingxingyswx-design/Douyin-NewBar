@@ -1,0 +1,4 @@
+-keep class com.autumn.douyin.liquidglass.hook.BarHook { *; }
+-keep class com.autumn.douyin.liquidglass.settings.ModuleSettingsProvider { *; }
+-keep class com.autumn.douyin.liquidglass.status.ModuleStatusActivity { *; }
+-keep class com.autumn.douyin.liquidglass.root.CompositeFrameDaemon { *; }

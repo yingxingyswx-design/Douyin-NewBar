@@ -1,0 +1,16 @@
+.gradle/
+.kotlin/
+build/
+local.properties
+*.keystore
+*.jks
+*.apk
+!Douyin-M3-Bar-v2.0.0-release.apk
+*.zip
+*.idsig
+*.log
+.idea/
+*.iml
+.DS_Store
+.tools/
+_ref/
