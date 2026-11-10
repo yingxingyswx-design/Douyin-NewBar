@@ -22,7 +22,7 @@
 
 ## 安装
 
-1. 安装 `Douyin-NewBar-v0.2.9.apk`
+1. 安装 `Douyin-NewBar-v0.2.8.1.apk`
 2. 在 LSPosed 中启用模块并勾选抖音
 3. 重启抖音（必要时重启手机）
 4. 打开模块 App 调整颜色、高度、间距

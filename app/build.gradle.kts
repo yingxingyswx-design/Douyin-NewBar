@@ -1,4 +1,4 @@
-﻿plugins {
+plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -13,8 +13,8 @@ android {
         applicationId = "com.autumn.douyin.liquidglass"
         minSdk = 33
         targetSdk = 35
-        versionCode = 29
-        versionName = "0.2.9"
+        versionCode = 281
+        versionName = "0.2.8.1"
     }
 
     buildTypes {
