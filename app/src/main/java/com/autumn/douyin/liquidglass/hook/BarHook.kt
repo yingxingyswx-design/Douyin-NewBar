@@ -195,28 +195,6 @@ class BarHook : IXposedHookLoadPackage {
             name.endsWith(".splash.SplashActivity")
     }
 
-    private fun makeSystemNavigationBarTransparent(activity: Activity) {
-        runCatching {
-            val window = activity.window
-            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.navigationBarColor = android.graphics.Color.TRANSPARENT
-            window.setNavigationBarDividerColor(android.graphics.Color.TRANSPARENT)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                window.isNavigationBarContrastEnforced = false
-            }
-            val controller = androidx.core.view.WindowCompat.getInsetsController(
-                window,
-                window.decorView,
-            )
-            controller.hide(androidx.core.view.WindowInsetsCompat.Type.navigationBars())
-            controller.systemBarsBehavior =
-                androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }.onFailure {
-            ModuleLog.error("transparent system navigation bar failed", it)
-        }
-    }
-
     private fun registerSettingsReceiver(context: Context) {
         if (settingsReceiverRegistered) return
         settingsReceiverRegistered = true
@@ -251,8 +229,11 @@ class BarHook : IXposedHookLoadPackage {
         val application = activity.applicationContext ?: return
         applicationContext = application
         registerSettingsReceiver(application)
-        makeSystemNavigationBarTransparent(activity)
         ModuleSettingsBridge.start(application, ::onSettingsChanged)
+        com.autumn.douyin.liquidglass.ui.SystemNavController.apply(
+            activity,
+            ModuleSettingsBridge.current.hideSystemNav,
+        )
         if (!ModuleSettingsBridge.current.enabled) return
 
         // Only one bar window per process. Keeping both the splash and main

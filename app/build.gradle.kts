@@ -13,8 +13,8 @@ android {
         applicationId = "com.autumn.douyin.liquidglass"
         minSdk = 33
         targetSdk = 35
-        versionCode = 28
-        versionName = "0.2.8"
+        versionCode = 29
+        versionName = "0.2.9"
     }
 
     buildTypes {
@@ -67,3 +67,4 @@ dependencies {
 
     compileOnly(files("libs/api-82.jar"))
 }
+

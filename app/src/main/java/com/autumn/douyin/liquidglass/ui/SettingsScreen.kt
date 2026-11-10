@@ -205,6 +205,38 @@ fun BarSettingsScreen(
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text(
+                            text = "隐藏系统导航栏",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "关闭后恢复系统手势条 / 三键导航；开启时内容铺满底部，上滑临时呼出",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = settings.hideSystemNav,
+                        onCheckedChange = {
+                            onSettingsChange(settings.copy(hideSystemNav = it))
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        ),
+                    )
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
                             text = "启用导航栏",
                             style = MaterialTheme.typography.titleMedium,
                         )

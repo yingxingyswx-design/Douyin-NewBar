@@ -149,6 +149,9 @@ class SolidBarOverlayView(
         if (previous.windowHeightDp != settings.windowHeightDp) {
             rootFrameProvider?.let(::updateRootRegion)
         }
+        if (previous.hideSystemNav != settings.hideSystemNav) {
+            (context as? Activity)?.let { SystemNavController.apply(it, settings.hideSystemNav) }
+        }
     }
 
     private fun syncBackdropCapture() {

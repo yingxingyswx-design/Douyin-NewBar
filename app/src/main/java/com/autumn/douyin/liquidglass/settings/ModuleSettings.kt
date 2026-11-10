@@ -38,6 +38,7 @@ data class ModuleSettings(
     val glassTintEnabled: Boolean = true,
     val realtimeGlass: Boolean = false,
     val rootCapture: Boolean = false,
+    val hideSystemNav: Boolean = true,
     val revision: Long = 0L,
 ) {
     /** Window height = bar + floating gap + a small top breathing area. */
@@ -81,6 +82,7 @@ object ModuleSettingsStore {
     const val KeyGlassTint = "glass_tint_enabled"
     const val KeyRealtimeGlass = "realtime_glass"
     const val KeyRootCapture = "root_capture"
+    const val KeyHideSystemNav = "hide_system_nav"
     const val KeySchema = "schema_version"
     const val CurrentSchema = 2
     const val KeyRevision = "revision"
@@ -95,6 +97,7 @@ object ModuleSettingsStore {
     const val ColumnGlassTint = "glass_tint_enabled"
     const val ColumnRealtimeGlass = "realtime_glass"
     const val ColumnRootCapture = "root_capture"
+    const val ColumnHideSystemNav = "hide_system_nav"
     const val ColumnRevision = "revision"
 
     private val revisionSource = AtomicLong(0L)
@@ -123,6 +126,7 @@ object ModuleSettingsStore {
             // Root capture is disabled on Android 16+: the required hidden
             // SurfaceControl/ScreenCapture APIs no longer exist.
             rootCapture = false,
+            hideSystemNav = preferences.getBoolean(KeyHideSystemNav, true),
             revision = preferences.getLong(KeyRevision, 0L),
         )
         revisionSource.updateAndGet { current -> maxOf(current, settings.revision) }
@@ -142,6 +146,7 @@ object ModuleSettingsStore {
             .putBoolean(KeyGlassTint, next.glassTintEnabled)
             .putBoolean(KeyRealtimeGlass, next.realtimeGlass)
             .putBoolean(KeyRootCapture, next.rootCapture)
+            .putBoolean(KeyHideSystemNav, next.hideSystemNav)
             .putInt(KeySchema, CurrentSchema)
             .putLong(KeyRevision, next.revision)
             .apply()
@@ -164,6 +169,7 @@ object ModuleSettingsStore {
             ColumnGlassTint,
             ColumnRealtimeGlass,
             ColumnRootCapture,
+            ColumnHideSystemNav,
             ColumnRevision,
         )
     ).apply {
@@ -179,6 +185,7 @@ object ModuleSettingsStore {
                 settings.glassTintEnabled,
                 settings.realtimeGlass,
                 settings.rootCapture,
+                settings.hideSystemNav,
                 settings.revision,
             )
         )
@@ -195,12 +202,13 @@ object ModuleSettingsStore {
         val glassTint = current.getColumnIndex(ColumnGlassTint)
         val realtime = current.getColumnIndex(ColumnRealtimeGlass)
         val rootCapture = current.getColumnIndex(ColumnRootCapture)
+        val hideSystemNav = current.getColumnIndex(ColumnHideSystemNav)
         val revision = current.getColumnIndex(ColumnRevision)
         if (!current.moveToFirst() ||
             enabled < 0 || dark < 0 || light < 0 ||
             barHeight < 0 || bottomGap < 0 || liquidGlass < 0 ||
             frost < 0 || glassTint < 0 || realtime < 0 ||
-            rootCapture < 0 || revision < 0
+            rootCapture < 0 || hideSystemNav < 0 || revision < 0
         ) {
             return null
         }
@@ -215,6 +223,7 @@ object ModuleSettingsStore {
             glassTintEnabled = current.getInt(glassTint) != 0,
             realtimeGlass = current.getInt(realtime) != 0,
             rootCapture = false,
+            hideSystemNav = current.getInt(hideSystemNav) != 0,
             revision = current.getLong(revision),
         )
     }
@@ -230,6 +239,7 @@ object ModuleSettingsStore {
         put(ColumnGlassTint, settings.glassTintEnabled)
         put(ColumnRealtimeGlass, settings.realtimeGlass)
         put(ColumnRootCapture, settings.rootCapture)
+        put(ColumnHideSystemNav, settings.hideSystemNav)
         put(ColumnRevision, settings.revision)
     }
 
@@ -245,6 +255,7 @@ object ModuleSettingsStore {
             setProperty(KeyGlassTint, settings.glassTintEnabled.toString())
             setProperty(KeyRealtimeGlass, settings.realtimeGlass.toString())
             setProperty(KeyRootCapture, settings.rootCapture.toString())
+            setProperty(KeyHideSystemNav, settings.hideSystemNav.toString())
             setProperty(KeyRevision, settings.revision.toString())
         }
         val writer = StringWriter()
@@ -271,6 +282,8 @@ object ModuleSettingsStore {
             realtimeGlass = properties.getProperty(KeyRealtimeGlass)
                 ?.toBooleanStrictOrNull() ?: false,
             rootCapture = false,
+            hideSystemNav = properties.getProperty(KeyHideSystemNav)
+                ?.toBooleanStrictOrNull() ?: true,
             revision = properties.getProperty(KeyRevision)?.toLongOrNull() ?: return null,
         )
     }.getOrNull()
