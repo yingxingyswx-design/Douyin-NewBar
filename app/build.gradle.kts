@@ -13,8 +13,8 @@ android {
         applicationId = "com.autumn.douyin.liquidglass"
         minSdk = 33
         targetSdk = 35
-        versionCode = 281
-        versionName = "0.2.8.1"
+        versionCode = 282
+        versionName = "0.2.8.2"
     }
 
     buildTypes {

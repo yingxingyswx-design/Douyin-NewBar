@@ -86,6 +86,21 @@ class BarHook : IXposedHookLoadPackage {
             )
         }
 
+        installHook("Instrumentation.callActivityOnResume") {
+            XposedHelpers.findAndHookMethod(
+                Instrumentation::class.java,
+                "callActivityOnResume",
+                Activity::class.java,
+                object : XC_MethodHook() {
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        val activity = param.args[0] as? Activity ?: return
+                        if (!isMainDouyinActivity(activity)) return
+                        installOverlay(activity)
+                    }
+                },
+            )
+        }
+
         installHook("Activity.onResume") {
             XposedHelpers.findAndHookMethod(
                 Activity::class.java,

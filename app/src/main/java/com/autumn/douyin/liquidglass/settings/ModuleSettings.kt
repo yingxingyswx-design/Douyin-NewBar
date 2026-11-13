@@ -175,17 +175,17 @@ object ModuleSettingsStore {
     ).apply {
         addRow(
             listOf(
-                settings.enabled,
+                if (settings.enabled) 1 else 0,
                 settings.darkColor,
                 settings.lightColor,
                 settings.barHeightDp,
                 settings.bottomGapDp,
-                settings.liquidGlass,
+                if (settings.liquidGlass) 1 else 0,
                 settings.frostDp,
-                settings.glassTintEnabled,
-                settings.realtimeGlass,
-                settings.rootCapture,
-                settings.hideSystemNav,
+                if (settings.glassTintEnabled) 1 else 0,
+                if (settings.realtimeGlass) 1 else 0,
+                if (settings.rootCapture) 1 else 0,
+                if (settings.hideSystemNav) 1 else 0,
                 settings.revision,
             )
         )
