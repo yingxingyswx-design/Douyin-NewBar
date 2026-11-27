@@ -110,6 +110,7 @@ class SolidBarOverlayView(
                 hasBackdrop = frame != null,
                 backdrop = frame,
                 glassTintOnly = settings.liquidGlass && frame == null,
+                barContentWidthPx = (width * 0.88f).toInt(),
             )
         }
         addView(composeView)
@@ -184,6 +185,24 @@ class SolidBarOverlayView(
             activity = activity,
             overlayView = this,
             frostLevelProvider = { settingsState.value.frostDp },
+            contentRectProvider = {
+                val density = resources.displayMetrics.density
+                val barHeightPx = (settingsState.value.barHeightDp * density).toInt()
+                val gapPx = (settingsState.value.bottomGapDp * density).toInt()
+                val rowWidth = width * 0.88f
+                val rowLeft = (width - rowWidth) / 2f
+                val marginPx = (BarMetrics.HorizontalMarginDp * density).toInt()
+                val plusPx = (settingsState.value.barHeightDp * density).toInt()
+                val plusGapPx = (BarMetrics.PlusGapDp * density).toInt()
+                val pillWidth = (rowWidth - marginPx * 2 - plusPx - plusGapPx).toInt()
+                val left = (rowLeft + marginPx).toInt()
+                Rect(
+                    left,
+                    height - gapPx - barHeightPx,
+                    left + pillWidth + plusGapPx + plusPx,
+                    height - gapPx,
+                )
+            },
         ) { frame ->
             backdropFrame.value = frame
         }.also { it.start() }

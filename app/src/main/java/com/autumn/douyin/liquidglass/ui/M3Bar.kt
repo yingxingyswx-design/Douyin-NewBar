@@ -63,6 +63,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -117,6 +118,7 @@ fun M3BarSurface(
     hasBackdrop: Boolean = liquidState != null,
     backdrop: ImageBitmap? = null,
     glassTintOnly: Boolean = false,
+    barContentWidthPx: Int = 0,
 ) {
     val targetContainer = Color(settings.barColorFor(selectedIndex))
     val neutralTint = settings.liquidGlass && !settings.glassTintEnabled
@@ -136,6 +138,15 @@ fun M3BarSurface(
         label = "bar-content",
     )
     val darkSurface = container.luminance() < 0.45f
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val marginPx = with(density) { BarMetrics.HorizontalMarginDp.dp.toPx() }
+    val plusPx = with(density) { settings.barHeightDp.dp.toPx() }
+    val plusGapPx = with(density) { BarMetrics.PlusGapDp.dp.toPx() }
+    val rowContentPx = (barContentWidthPx - marginPx * 2f).coerceAtLeast(1f)
+    val pillEndFraction = ((rowContentPx - plusPx - plusGapPx) / rowContentPx)
+        .coerceIn(0.05f, 0.95f)
+    val plusStartFraction = ((rowContentPx - plusPx) / rowContentPx)
+        .coerceIn(pillEndFraction + 0.01f, 0.99f)
 
     Box(
         modifier = modifier
@@ -168,6 +179,7 @@ fun M3BarSurface(
                 glassTintOnly = glassTintOnly,
                 frostDp = settings.frostDp,
                 neutralTint = neutralTint,
+                backdropRange = 0f..pillEndFraction,
             )
             PlusButton(
                 size = settings.barHeightDp.dp,
@@ -181,6 +193,7 @@ fun M3BarSurface(
                 glassTintOnly = glassTintOnly,
                 frostDp = settings.frostDp,
                 neutralTint = neutralTint,
+                backdropRange = plusStartFraction..1f,
             )
         }
     }
@@ -200,6 +213,7 @@ private fun BarPill(
     glassTintOnly: Boolean,
     frostDp: Int,
     neutralTint: Boolean,
+    backdropRange: ClosedFloatingPointRange<Float>,
     modifier: Modifier = Modifier,
 ) {
     val shape = CircleShape
@@ -211,6 +225,7 @@ private fun BarPill(
             darkSurface = darkSurface,
             backdrop = backdrop,
             neutralTint = neutralTint,
+            backdropRange = backdropRange,
         )
         liquidState != null -> modifier.liquidPanel(
             state = liquidState,
@@ -416,6 +431,7 @@ private fun PlusButton(
     glassTintOnly: Boolean,
     frostDp: Int,
     neutralTint: Boolean,
+    backdropRange: ClosedFloatingPointRange<Float>,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
@@ -436,6 +452,7 @@ private fun PlusButton(
             darkSurface = container.luminance() < 0.45f,
             backdrop = backdrop,
             neutralTint = neutralTint,
+            backdropRange = backdropRange,
         )
         liquidState != null -> Modifier.liquidPanel(
             state = liquidState,
@@ -562,6 +579,7 @@ private fun Modifier.frostedPanel(
     darkSurface: Boolean,
     backdrop: ImageBitmap,
     neutralTint: Boolean,
+    backdropRange: ClosedFloatingPointRange<Float>,
 ): Modifier = this
     .shadow(
         elevation = 8.dp,
@@ -585,8 +603,14 @@ private fun Modifier.frostedPanel(
             )
         }
         clipPath(path) {
+            val srcStart = (backdrop.width * backdropRange.start)
+                .toInt().coerceIn(0, backdrop.width - 1)
+            val srcEnd = (backdrop.width * backdropRange.endInclusive)
+                .toInt().coerceIn(srcStart + 1, backdrop.width)
             drawImage(
                 image = backdrop,
+                srcOffset = IntOffset(srcStart, 0),
+                srcSize = IntSize(srcEnd - srcStart, backdrop.height),
                 dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
                 filterQuality = FilterQuality.Low,
             )

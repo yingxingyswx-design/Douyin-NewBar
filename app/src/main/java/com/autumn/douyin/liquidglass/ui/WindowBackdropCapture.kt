@@ -29,6 +29,7 @@ class WindowBackdropCapture(
     private val activity: Activity,
     private val overlayView: View,
     private val frostLevelProvider: () -> Int,
+    private val contentRectProvider: () -> Rect,
     private val onFrame: (ImageBitmap?) -> Unit,
 ) {
     private val handler = Handler(Looper.getMainLooper())
@@ -41,6 +42,7 @@ class WindowBackdropCapture(
     private var cachedTexture: TextureView? = null
     private var lastSurfaceScanAt = 0L
     private var lastValidFrameAt = 0L
+    private var loggedRegion = false
     private var inFlightSince = 0L
     private var capturedFrames = 0
     private var fpsWindowStartedAt = 0L
@@ -93,11 +95,27 @@ class WindowBackdropCapture(
         val decorLocation = IntArray(2)
         decor.getLocationOnScreen(decorLocation)
 
-        val left = (overlayLocation[0] - decorLocation[0]).coerceIn(0, decor.width - 1)
-        val top = (overlayLocation[1] - decorLocation[1]).coerceIn(0, decor.height - 1)
-        val right = (left + overlayView.width).coerceIn(left + 1, decor.width)
-        val bottom = (top + overlayView.height).coerceIn(top + 1, decor.height)
+        val localContent = contentRectProvider()
+        val left = (
+            overlayLocation[0] - decorLocation[0] + localContent.left
+            ).coerceIn(0, decor.width - 1)
+        val top = (
+            overlayLocation[1] - decorLocation[1] + localContent.top
+            ).coerceIn(0, decor.height - 1)
+        val right = (
+            overlayLocation[0] - decorLocation[0] + localContent.right
+            ).coerceIn(left + 1, decor.width)
+        val bottom = (
+            overlayLocation[1] - decorLocation[1] + localContent.bottom
+            ).coerceIn(top + 1, decor.height)
         val source = Rect(left, top, right, bottom)
+        if (!loggedRegion) {
+            loggedRegion = true
+            ModuleLog.info(
+                "capture region=${source.width()}x${source.height()} " +
+                    "overlay=${overlayView.width}x${overlayView.height} local=$localContent",
+            )
+        }
 
         // Fallback: visible TextureView / SurfaceView, then the window strip.
         val texture = findVideoTexture(decor)
