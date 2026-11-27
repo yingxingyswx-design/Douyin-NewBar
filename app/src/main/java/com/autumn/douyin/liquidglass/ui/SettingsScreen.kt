@@ -108,8 +108,6 @@ fun BarSettingsScreen(
     onSettingsChange: (ModuleSettings) -> Unit,
     onOpenDouyin: () -> Unit,
     onForceStopDouyin: () -> Unit,
-    onStartScreenCapture: () -> Unit,
-    onStopScreenCapture: () -> Unit,
 ) {
     var previewIndex by remember { mutableIntStateOf(0) }
     var pickerTarget by remember { mutableStateOf<ColorTarget?>(null) }

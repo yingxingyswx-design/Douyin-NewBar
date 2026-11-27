@@ -38,7 +38,6 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.autumn.douyin.liquidglass.ModuleLog
-import com.autumn.douyin.liquidglass.capture.ProjectionFrameSource
 import com.autumn.douyin.liquidglass.root.RootFrameProvider
 import com.autumn.douyin.liquidglass.settings.ModuleSettings
 import io.github.fletchmckee.liquid.liquefiable
@@ -63,10 +62,8 @@ class SolidBarOverlayView(
     private val savedStateController = SavedStateRegistryController.create(this)
     private val settingsState = mutableStateOf(initialSettings)
     private val backdropFrame = mutableStateOf<ImageBitmap?>(null)
-    private val projectionFrame = mutableStateOf<ImageBitmap?>(null)
     private var backdropCapture: WindowBackdropCapture? = null
     private var rootFrameProvider: RootFrameProvider? = null
-    private var projectionSource: ProjectionFrameSource? = null
     private var lifecycleStarted = false
     private var desiredPresent = true
     private var presenceAnimator: ValueAnimator? = null
@@ -101,7 +98,7 @@ class SolidBarOverlayView(
         composeView.setViewTreeSavedStateRegistryOwner(this)
         composeView.setContent {
             val settings = settingsState.value
-            val frame = projectionFrame.value ?: backdropFrame.value
+            val frame = backdropFrame.value
             M3BarSurface(
                 settings = settings,
                 selectedIndex = controller.selectedTab,
@@ -163,7 +160,6 @@ class SolidBarOverlayView(
             !activityFinishing
         if (!captureAllowed) {
             stopBackdropCapture()
-            stopProjectionSource()
             return
         }
         if (settingsState.value.rootCapture) {
@@ -227,35 +223,6 @@ class SolidBarOverlayView(
         backdropCapture?.stop()
         backdropCapture = null
         stopRootCapture()
-    }
-
-    private fun startProjectionSource() {
-        if (projectionSource != null) return
-        ModuleLog.info("starting projection frame source")
-        projectionSource = ProjectionFrameSource(
-            context = context,
-            barRegion = {
-                val display = resources.displayMetrics
-                Rect(
-                    0,
-                    display.heightPixels - windowHeightPx(settingsState.value),
-                    display.widthPixels,
-                    display.heightPixels,
-                )
-            },
-            screenSize = {
-                val display = resources.displayMetrics
-                Rect(0, 0, display.widthPixels, display.heightPixels)
-            },
-        ) { bitmap ->
-            projectionFrame.value = bitmap?.asImageBitmap()
-        }.also { it.start() }
-    }
-
-    private fun stopProjectionSource() {
-        projectionSource?.stop()
-        projectionSource = null
-        projectionFrame.value = null
     }
 
     private fun windowHeightPx(settings: ModuleSettings): Int =
@@ -356,7 +323,6 @@ class SolidBarOverlayView(
 
     override fun onDetachedFromWindow() {
         stopBackdropCapture()
-        stopProjectionSource()
         presenceAnimator?.cancel()
         presenceAnimator = null
         destroyLifecycle()

@@ -17,7 +17,6 @@ import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.autumn.douyin.liquidglass.root.CompositeFrameDaemonLauncher
-import com.autumn.douyin.liquidglass.capture.ScreenCaptureService
 import com.autumn.douyin.liquidglass.settings.AppThemePreference
 import com.autumn.douyin.liquidglass.settings.ModuleSettings
 import com.autumn.douyin.liquidglass.settings.ModuleSettingsMirror
@@ -34,17 +33,6 @@ class ModuleStatusActivity : ComponentActivity() {
     }
     private val rootExecutor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "m3-bar-root-actions").apply { isDaemon = true }
-    }
-    private val capturePermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-    ) { result ->
-        val data = result.data
-        if (result.resultCode == RESULT_OK && data != null) {
-            ScreenCaptureService.start(this, result.resultCode, data)
-            Toast.makeText(this, "录屏抓帧已启动", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "未授权录屏", Toast.LENGTH_SHORT).show()
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,8 +73,6 @@ class ModuleStatusActivity : ComponentActivity() {
                     onSettingsChange = ::updateSettings,
                     onOpenDouyin = ::openDouyin,
                     onForceStopDouyin = ::forceStopDouyin,
-                    onStartScreenCapture = ::requestScreenCapture,
-                    onStopScreenCapture = ::stopScreenCapture,
                 )
             }
         }
@@ -165,20 +151,6 @@ class ModuleStatusActivity : ComponentActivity() {
         }.onFailure {
             Toast.makeText(this, "无法打开抖音", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun requestScreenCapture() {
-        val manager = getSystemService(MediaProjectionManager::class.java)
-        runCatching {
-            capturePermissionLauncher.launch(manager.createScreenCaptureIntent())
-        }.onFailure {
-            Toast.makeText(this, "无法请求录屏权限", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun stopScreenCapture() {
-        ScreenCaptureService.stop(this)
-        Toast.makeText(this, "录屏抓帧已停止", Toast.LENGTH_SHORT).show()
     }
 
     private fun forceStopDouyin() {        Toast.makeText(this, "正在强制停止抖音…", Toast.LENGTH_SHORT).show()
